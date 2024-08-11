@@ -16,23 +16,23 @@ pub mod kubious_api {
     }
 
     pub trait CommandHandler {
-        fn execute<T: Serialize>(&self, _handle: &AppHandle) -> Result<Box<T>, String> {
-            Err("Execution not implemented".into())
+        fn execute(&self, _handle: &AppHandle) -> Result<impl Serialize, String> {
+            Err::<Value, String>("Execution not implemented".into())
         }
     }
 
-    pub fn execute_command<T: Serialize>(app: AppHandle, command: ApiCommand) -> Result<Value, String> {
-        let result: Result<Box<T>, String> = match command {
-            ApiCommand::Application(cmd) => cmd.execute(&app.clone()),
-            ApiCommand::Kube(cmd) => cmd.execute(&app.clone()),
-            ApiCommand::Helm(cmd) => cmd.execute(&app.clone()),
-            ApiCommand::Kompose(cmd) => cmd.execute(&app.clone()),
-            ApiCommand::Artifacts(cmd) => cmd.execute(&app.clone()),
+    pub fn execute_command(app: AppHandle, command: ApiCommand) -> Result<Value, String> {
+        let result = match command {
+            ApiCommand::Application(cmd) => serde_json::to_value(cmd.execute(&app.clone())),
+            ApiCommand::Kube(cmd) => serde_json::to_value(cmd.execute(&app.clone())),
+            ApiCommand::Helm(cmd) => serde_json::to_value(cmd.execute(&app.clone())),
+            ApiCommand::Kompose(cmd) => serde_json::to_value(cmd.execute(&app.clone())),
+            ApiCommand::Artifacts(cmd) => serde_json::to_value(cmd.execute(&app.clone())),
         };
         
         match result {
-            Ok(res) => serde_json::to_value(*res).and_then(|v| Ok(v)).or(Err("Failed to parse return value.".into())),
-            Err(res) => Err(res)
+            Ok(res) => Ok(res),
+            Err(_) => Err("Failed to parse return value.".into())
         }
     }
 }

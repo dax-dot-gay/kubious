@@ -6,7 +6,7 @@ use tauri::AppHandle;
 
 #[tauri::command]
 fn execute_api_command(app_handle: AppHandle, command: ApiCommand) -> Result<Value, String> {
-    execute_command::<Value>(app_handle, command)
+    execute_command(app_handle, command)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
