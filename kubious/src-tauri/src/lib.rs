@@ -1,7 +1,12 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+mod api;
+use api::{ApiCommand, execute_command, CommandHandler};
+use serde_json::Value;
+use tauri::AppHandle;
+
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+fn execute_api_command(app_handle: AppHandle, command: ApiCommand) -> Result<Value, String> {
+    execute_command::<Value>(app_handle, command)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -11,7 +16,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![execute_api_command])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
