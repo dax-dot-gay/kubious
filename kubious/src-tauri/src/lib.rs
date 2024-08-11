@@ -1,11 +1,10 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 mod api;
-use api::{ApiCommand, execute_command, CommandHandler};
-use serde_json::Value;
+use api::{execute_command, ApiCommand, CommandHandler, CommandResult};
 use tauri::AppHandle;
 
 #[tauri::command]
-fn execute_api_command(app_handle: AppHandle, command: ApiCommand) -> Result<Value, String> {
+fn execute_api_command(app_handle: AppHandle, command: ApiCommand) -> CommandResult {
     execute_command(app_handle, command)
 }
 

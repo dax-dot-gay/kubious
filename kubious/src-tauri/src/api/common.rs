@@ -21,8 +21,16 @@ pub mod kubious_api {
         }
     }
 
-    pub fn execute_command(app: AppHandle, command: ApiCommand) -> Result<Value, String> {
-        let result = match command {
+    #[derive(Serialize, Deserialize, Clone)]
+    pub struct CommandResult {
+        command: ApiCommand,
+        success: bool,
+        value: Option<Value>,
+        error: Option<String>
+    }
+
+    pub fn execute_command(app: AppHandle, command: ApiCommand) -> CommandResult {
+        let result = match command.clone() {
             ApiCommand::Application(cmd) => serde_json::to_value(cmd.execute(&app.clone())),
             ApiCommand::Kube(cmd) => serde_json::to_value(cmd.execute(&app.clone())),
             ApiCommand::Helm(cmd) => serde_json::to_value(cmd.execute(&app.clone())),
@@ -31,8 +39,8 @@ pub mod kubious_api {
         };
         
         match result {
-            Ok(res) => Ok(res),
-            Err(_) => Err("Failed to parse return value.".into())
+            Ok(res) => CommandResult{command, success: true, value: Some(res), error: None},
+            Err(_) => CommandResult{command, success: false, value: None, error: Some("Failed to parse return value.".into())}
         }
     }
 }
