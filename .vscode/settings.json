@@ -1,3 +1,14 @@
 {
-  "rust-analyzer.linkedProjects": ["kubious/src-tauri/Cargo.toml"]
+  "rust-analyzer.linkedProjects": ["kubious/src-tauri/Cargo.toml"],
+  "cssVariables.lookupFiles": [
+    "**/*.css",
+    "**/*.scss",
+    "**/*.sass",
+    "**/*.less",
+    "kubious/node_modules/@mantine/core/styles.css"
+  ],
+  "i18n-ally.enabledFrameworks": ["react-i18next"],
+  "i18n-ally.localesPaths": ["kubious/src/lang"],
+  "i18n-ally.enabledParsers": ["json"],
+  "i18n-ally.keystyle": "nested"
 }
