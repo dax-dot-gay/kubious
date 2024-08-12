@@ -3,16 +3,19 @@ pub mod kubious_api {
     use serde_json::Value;
     use tauri::AppHandle;
 
-    use crate::api::{application_api::ApplicationCommand, artifacts_api::ArtifactsCommand, helm_api::HelmCommand, kompose_api::KomposeCommand, kube_api::KubeCommand};
+    use crate::api::{
+        application_api::ApplicationCommand, artifacts_api::ArtifactsCommand,
+        helm_api::HelmCommand, kompose_api::KomposeCommand, kube_api::KubeCommand,
+    };
 
-
-    #[derive(Serialize, Deserialize, Clone)]
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    #[serde(tag = "scope")]
     pub enum ApiCommand {
         Application(ApplicationCommand),
         Kube(KubeCommand),
         Helm(HelmCommand),
         Kompose(KomposeCommand),
-        Artifacts(ArtifactsCommand)
+        Artifacts(ArtifactsCommand),
     }
 
     pub trait CommandHandler {
@@ -26,21 +29,41 @@ pub mod kubious_api {
         command: ApiCommand,
         success: bool,
         value: Option<Value>,
-        error: Option<String>
+        error: Option<String>,
+    }
+
+    fn unwrap_result(command: ApiCommand, result: Result<impl Serialize, String>) -> CommandResult {
+        match result {
+            Ok(res) => serde_json::to_value(res)
+                .and_then(|v| Ok(CommandResult {
+                    command: command.clone(),
+                    success: true,
+                    value: Some(v),
+                    error: None,
+                })).or_else(|_| Ok::<CommandResult, ()>(CommandResult {
+                    command: command.clone(),
+                    success: false,
+                    value: None,
+                    error: Some("Failed to parse return value.".into()),
+                })),
+            Err(res) => Ok(CommandResult {
+                    command,
+                    success: false,
+                    value: None,
+                    error: Some(res),
+                }),
+        }.unwrap()
     }
 
     pub fn execute_command(app: AppHandle, command: ApiCommand) -> CommandResult {
         let result = match command.clone() {
-            ApiCommand::Application(cmd) => serde_json::to_value(cmd.execute(&app.clone())),
-            ApiCommand::Kube(cmd) => serde_json::to_value(cmd.execute(&app.clone())),
-            ApiCommand::Helm(cmd) => serde_json::to_value(cmd.execute(&app.clone())),
-            ApiCommand::Kompose(cmd) => serde_json::to_value(cmd.execute(&app.clone())),
-            ApiCommand::Artifacts(cmd) => serde_json::to_value(cmd.execute(&app.clone())),
+            ApiCommand::Application(cmd) => unwrap_result(command, cmd.execute(&app.clone())),
+            ApiCommand::Kube(cmd) => unwrap_result(command, cmd.execute(&app.clone())),
+            ApiCommand::Helm(cmd) => unwrap_result(command, cmd.execute(&app.clone())),
+            ApiCommand::Kompose(cmd) => unwrap_result(command, cmd.execute(&app.clone())),
+            ApiCommand::Artifacts(cmd) => unwrap_result(command, cmd.execute(&app.clone())),
         };
-        
-        match result {
-            Ok(res) => CommandResult{command, success: true, value: Some(res), error: None},
-            Err(_) => CommandResult{command, success: false, value: None, error: Some("Failed to parse return value.".into())}
-        }
+
+        result
     }
 }

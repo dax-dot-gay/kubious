@@ -1,8 +1,10 @@
-import { Box, Divider, Group, Paper, Stack, Text } from "@mantine/core";
+import { Box, Button, Divider, Group, Paper, Stack, Text } from "@mantine/core";
 import { Outlet } from "react-router-dom";
 import { Icon } from "@mdi/react";
 import { mdiCube } from "@mdi/js";
 import { useTranslation } from "react-i18next";
+import { execute_command } from "../../api/common";
+import { CommandScope } from "../../api/types";
 
 export function Layout() {
     const { t } = useTranslation();
@@ -21,6 +23,16 @@ export function Layout() {
                             <Text size="lg">{t("common.appName")}</Text>
                         </Group>
                         <Divider />
+                        <Button
+                            onClick={() =>
+                                execute_command(
+                                    CommandScope.Helm,
+                                    "get_version"
+                                ).then(console.log)
+                            }
+                        >
+                            TEST
+                        </Button>
                     </Stack>
                 </Paper>
                 <Box className="layout-content">

@@ -26,15 +26,16 @@ pub mod helm_api {
         output
     }
 
-    #[derive(Serialize, Deserialize, Clone)]
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    #[serde(tag = "command")]
     pub enum HelmCommand {
-        GetVersion,
+        GetVersion{},
     }
 
     impl CommandHandler for HelmCommand {
         fn execute(&self, handle: &tauri::AppHandle) -> Result<impl Serialize, String> {
             match *self {
-                HelmCommand::GetVersion => get_shell_version(handle),
+                HelmCommand::GetVersion{} => get_shell_version(handle),
             }
         }
     }

@@ -88,5 +88,17 @@ pub mod app_state {
                 None
             }
         }
+
+        pub fn to_json(&self) -> Result<String, serde_json::Error> {
+            serde_json::to_string_pretty(self)
+        }
+
+        pub fn from_json(value: &str) -> Result<Self, serde_json::Error> {
+            serde_json::from_str(value)
+        }
+
+        pub fn new() -> Self {
+            AppState { configs: Mutex::new(HashMap::<String, KubeConfig>::new()), current_config: Mutex::new(None) }
+        }
     }
 }

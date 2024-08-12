@@ -27,14 +27,15 @@ pub mod kompose_api {
         output
     }
 
-    #[derive(Serialize, Deserialize, Clone)]
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    #[serde(tag = "command")]
     pub enum KomposeCommand {
-        GetVersion
+        GetVersion{}
     }
     impl CommandHandler for KomposeCommand {
         fn execute(&self, handle: &tauri::AppHandle) -> Result<impl Serialize, String> {
             match *self {
-                KomposeCommand::GetVersion => get_shell_version(handle)
+                KomposeCommand::GetVersion{} => get_shell_version(handle)
             }
         }
     }
