@@ -3,6 +3,9 @@ mod api;
 use api::{execute_command, ApiCommand, CommandHandler, CommandResult};
 use tauri::AppHandle;
 
+mod compat;
+use compat::kube_compat;
+
 #[tauri::command]
 fn execute_api_command(app_handle: AppHandle, command: ApiCommand) -> CommandResult {
     execute_command(app_handle, command)

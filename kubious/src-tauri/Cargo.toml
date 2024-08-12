@@ -24,4 +24,5 @@ k8s-openapi = { version = "0.22.0", features = ["latest"] }
 tauri-plugin-dialog = "2.0.0-rc.0"
 tauri-plugin-fs = "2.0.0-rc.0"
 tauri-plugin-http = "2.0.0-rc.0"
+http = "1.1.0"
 

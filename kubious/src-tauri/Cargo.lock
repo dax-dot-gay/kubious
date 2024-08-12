@@ -2152,6 +2152,7 @@ dependencies = [
 name = "kubious"
 version = "0.0.0"
 dependencies = [
+ "http",
  "k8s-openapi",
  "kube",
  "serde",

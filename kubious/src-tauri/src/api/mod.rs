@@ -2,6 +2,7 @@ mod common;
 pub use common::kubious_api::{ApiCommand, execute_command, CommandHandler, CommandResult};
 mod application;
 pub use application::application_api;
+pub use application::app_state;
 
 mod artifacts;
 pub use artifacts::artifacts_api;

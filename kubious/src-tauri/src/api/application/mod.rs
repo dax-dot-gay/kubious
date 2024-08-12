@@ -6,3 +6,6 @@ pub mod application_api {
     pub enum ApplicationCommand {}
     impl CommandHandler for ApplicationCommand {}
 }
+
+mod state;
+pub use state::app_state;
