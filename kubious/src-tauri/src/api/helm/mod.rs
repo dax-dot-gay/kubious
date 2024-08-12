@@ -1,6 +1,7 @@
 pub mod helm_api {
     use crate::CommandHandler;
     use serde::{Deserialize, Serialize};
+    use serde_json::Value;
     use tauri_plugin_shell::ShellExt;
 
     fn get_shell_version(handle: &tauri::AppHandle) -> Result<String, String> {
@@ -29,13 +30,13 @@ pub mod helm_api {
     #[derive(Serialize, Deserialize, Clone, Debug)]
     #[serde(tag = "command")]
     pub enum HelmCommand {
-        GetVersion{},
+        GetVersion {},
     }
 
     impl CommandHandler for HelmCommand {
-        fn execute(&self, handle: &tauri::AppHandle) -> Result<impl Serialize, String> {
+        fn execute(&self, handle: &tauri::AppHandle) -> Result<Value, String> {
             match *self {
-                HelmCommand::GetVersion{} => get_shell_version(handle),
+                HelmCommand::GetVersion {} => self.wrap_in_value(get_shell_version(handle)),
             }
         }
     }

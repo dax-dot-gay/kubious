@@ -19,7 +19,14 @@ pub mod kubious_api {
     }
 
     pub trait CommandHandler {
-        fn execute(&self, _handle: &AppHandle) -> Result<impl Serialize, String> {
+        fn wrap_in_value(&self, result: Result<impl Serialize, String>) -> Result<Value, String> {
+            match result {
+                Ok(success) => Ok(serde_json::to_value(success).unwrap()),
+                Err(error) => Err(error)
+            }
+        }
+
+        fn execute(&self, _handle: &AppHandle) -> Result<Value, String> {
             Err::<Value, String>("Execution not implemented".into())
         }
     }

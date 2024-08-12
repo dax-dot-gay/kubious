@@ -1,5 +1,6 @@
 pub mod kompose_api {
     use serde::{Deserialize, Serialize};
+    use serde_json::Value;
     use crate::CommandHandler;
 
     use tauri_plugin_shell::ShellExt;
@@ -33,9 +34,9 @@ pub mod kompose_api {
         GetVersion{}
     }
     impl CommandHandler for KomposeCommand {
-        fn execute(&self, handle: &tauri::AppHandle) -> Result<impl Serialize, String> {
+        fn execute(&self, handle: &tauri::AppHandle) -> Result<Value, String> {
             match *self {
-                KomposeCommand::GetVersion{} => get_shell_version(handle)
+                KomposeCommand::GetVersion{} => self.wrap_in_value(get_shell_version(handle))
             }
         }
     }
