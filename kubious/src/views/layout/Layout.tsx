@@ -1,10 +1,31 @@
 import { Box, Button, Divider, Group, Paper, Stack, Text } from "@mantine/core";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Icon } from "@mdi/react";
-import { mdiCube } from "@mdi/js";
+import { mdiCube, mdiViewDashboard } from "@mdi/js";
 import { useTranslation } from "react-i18next";
-import { execute_command } from "../../api/common";
-import { CommandScope } from "../../api/types";
+
+function NavButton({
+    icon,
+    label,
+    href,
+}: {
+    icon: string;
+    label: string;
+    href: string;
+}) {
+    const nav = useNavigate();
+    const location = useLocation();
+    return (
+        <Button
+            leftSection={<Icon size="20px" path={icon} />}
+            justify="space-between"
+            onClick={() => nav(href)}
+            variant={location.pathname === href ? "filled" : "light"}
+        >
+            {label}
+        </Button>
+    );
+}
 
 export function Layout() {
     const { t } = useTranslation();
@@ -22,17 +43,12 @@ export function Layout() {
                             <Icon size="32px" path={mdiCube} />
                             <Text size="lg">{t("common.appName")}</Text>
                         </Group>
+                        <NavButton
+                            icon={mdiViewDashboard}
+                            label={t("views.dashboard.nav")}
+                            href="/"
+                        />
                         <Divider />
-                        <Button
-                            onClick={() =>
-                                execute_command(
-                                    CommandScope.Kube,
-                                    "supported_groups"
-                                ).then(console.log)
-                            }
-                        >
-                            TEST
-                        </Button>
                     </Stack>
                 </Paper>
                 <Box className="layout-content">

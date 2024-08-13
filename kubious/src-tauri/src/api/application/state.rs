@@ -1,16 +1,23 @@
 pub mod app_state {
-    use std::{collections::HashMap, fs::File, io::Write, sync::{Mutex, MutexGuard}};
-    use kube::{Client, Config};
+    use kube::{
+        config::{KubeConfigOptions, Kubeconfig},
+        Client, Config,
+    };
     use serde::{Deserialize, Serialize};
+    use std::{
+        collections::HashMap,
+        fs::File,
+        io::Write,
+        sync::{Mutex, MutexGuard},
+    };
     use tauri::{AppHandle, Manager};
 
     use crate::compat::kube_compat::KubeConfig;
 
-
     #[derive(Serialize, Deserialize)]
     pub struct AppState {
         configs: Mutex<HashMap<String, KubeConfig>>,
-        current_config: Mutex<Option<String>>
+        current_config: Mutex<Option<String>>,
     }
 
     impl AppState {
@@ -30,7 +37,10 @@ pub mod app_state {
             }
         }
 
-        pub fn set_current_config(&self, value: Option<String>) -> Result<Option<KubeConfig>, String> {
+        pub fn set_current_config(
+            &self,
+            value: Option<String>,
+        ) -> Result<Option<KubeConfig>, String> {
             let mut current = self.current_config_mutable();
             if let Some(name) = value {
                 if let Some(c) = self.configs_mutable().get(name.as_str()) {
@@ -56,7 +66,7 @@ pub mod app_state {
         pub fn get_configs(&self) -> HashMap<String, KubeConfig> {
             self.configs_mutable().clone()
         }
-        
+
         pub fn put_config(&self, key: &str, config: Config) -> KubeConfig {
             let mut configs = self.configs_mutable();
             let converted = KubeConfig::from(config);
@@ -64,10 +74,20 @@ pub mod app_state {
             converted.clone()
         }
 
-        pub fn put_kubeconfig(&self, key: &str, config: KubeConfig) -> KubeConfig {
+        pub fn put_compat_config(&self, key: &str, config: KubeConfig) -> KubeConfig {
             let mut configs = self.configs_mutable();
             (*configs).insert(key.to_string(), config.clone());
             config.clone()
+        }
+
+        pub async fn put_kubeconfig(&self, key: &str, config: Kubeconfig) -> Result<KubeConfig, String> {
+            let bound = KubeConfigOptions::default();
+            let converted = Config::from_custom_kubeconfig(config, &bound).await;
+            if let Ok(conf) = converted {
+                Ok(self.put_config(key, conf))
+            } else {
+                Err("Kubeconfig parsing failed".to_string())
+            }
         }
 
         pub fn remove_config(&self, key: &str) {
@@ -99,14 +119,17 @@ pub mod app_state {
         }
 
         pub fn new() -> Self {
-            AppState { configs: Mutex::new(HashMap::<String, KubeConfig>::new()), current_config: Mutex::new(None) }
+            AppState {
+                configs: Mutex::new(HashMap::<String, KubeConfig>::new()),
+                current_config: Mutex::new(None),
+            }
         }
 
         pub async fn client(&self) -> Option<Client> {
             if let Some(current) = self.get_current_config() {
                 match Client::try_from(<KubeConfig as Into<Config>>::into(current)) {
                     Ok(cl) => Some(cl),
-                    Err(_) => None
+                    Err(_) => None,
                 }
             } else {
                 None

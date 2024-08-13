@@ -1,6 +1,7 @@
 pub mod application_api {
 
-    use crate::{compat::kube_compat::KubeConfig, CommandHandler};
+    use crate::CommandHandler;
+    use kube::config::Kubeconfig;
     use serde::{Deserialize, Serialize};
     use serde_json::Value;
     use tauri::Manager;
@@ -13,7 +14,7 @@ pub mod application_api {
         SetCurrentConfig { key: Option<String> },
         GetCurrentConfig {},
         GetConfigs {},
-        AddConfig { key: String, config: KubeConfig },
+        AddConfig { key: String, config: Kubeconfig },
         RemoveConfig { key: String },
     }
     impl CommandHandler for ApplicationCommand {
@@ -39,7 +40,7 @@ pub mod application_api {
                 }
                 ApplicationCommand::AddConfig { key, config } => {
                     let state = handle.state::<AppState>();
-                    let conf = state.put_kubeconfig(key, config.clone());
+                    let conf = state.put_kubeconfig(key, config.clone()).await;
                     state
                         .save_state(handle.clone())
                         .and(self.wrap_in_value(Ok(conf)))

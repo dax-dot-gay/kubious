@@ -28,7 +28,7 @@ export function App() {
                         ],
                     },
                     primaryColor: "primary",
-                    primaryShade: 5,
+                    primaryShade: 6,
                 })}
             >
                 <Notifications />

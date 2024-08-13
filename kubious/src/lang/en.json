@@ -1,5 +1,10 @@
 {
   "common": {
     "appName": "Kubious"
+  },
+  "views": {
+    "dashboard": {
+      "nav": "Dashboard"
+    }
   }
 }
