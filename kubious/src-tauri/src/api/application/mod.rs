@@ -16,7 +16,7 @@ pub mod application_api {
         GetConfigs{}
     }
     impl CommandHandler for ApplicationCommand {
-        fn execute(&self, handle: &tauri::AppHandle) -> Result<Value, String> {
+        async fn execute(&self, handle: &tauri::AppHandle) -> Result<Value, String> {
             match self {
                 ApplicationCommand::SetCurrentConfig { key } => {
                     let state = handle.state::<AppState>();

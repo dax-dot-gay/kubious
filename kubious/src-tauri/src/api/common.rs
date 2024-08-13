@@ -26,7 +26,7 @@ pub mod kubious_api {
             }
         }
 
-        fn execute(&self, _handle: &AppHandle) -> Result<Value, String> {
+        async fn execute(&self, _handle: &AppHandle) -> Result<Value, String> {
             Err::<Value, String>("Execution not implemented".into())
         }
     }
@@ -62,13 +62,13 @@ pub mod kubious_api {
         }.unwrap()
     }
 
-    pub fn execute_command(app: AppHandle, command: ApiCommand) -> CommandResult {
+    pub async fn execute_command(app: AppHandle, command: ApiCommand) -> CommandResult {
         let result = match command.clone() {
-            ApiCommand::Application(cmd) => unwrap_result(command, cmd.execute(&app.clone())),
-            ApiCommand::Kube(cmd) => unwrap_result(command, cmd.execute(&app.clone())),
-            ApiCommand::Helm(cmd) => unwrap_result(command, cmd.execute(&app.clone())),
-            ApiCommand::Kompose(cmd) => unwrap_result(command, cmd.execute(&app.clone())),
-            ApiCommand::Artifacts(cmd) => unwrap_result(command, cmd.execute(&app.clone())),
+            ApiCommand::Application(cmd) => unwrap_result(command, cmd.execute(&app.clone()).await),
+            ApiCommand::Kube(cmd) => unwrap_result(command, cmd.execute(&app.clone()).await),
+            ApiCommand::Helm(cmd) => unwrap_result(command, cmd.execute(&app.clone()).await),
+            ApiCommand::Kompose(cmd) => unwrap_result(command, cmd.execute(&app.clone()).await),
+            ApiCommand::Artifacts(cmd) => unwrap_result(command, cmd.execute(&app.clone()).await),
         };
 
         result

@@ -8,8 +8,8 @@ use tauri::{AppHandle, Manager};
 mod compat;
 
 #[tauri::command]
-fn execute_api_command(app_handle: AppHandle, command: ApiCommand) -> CommandResult {
-    execute_command(app_handle, command)
+async fn execute_api_command(app_handle: AppHandle, command: ApiCommand) -> CommandResult {
+    execute_command(app_handle, command).await
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

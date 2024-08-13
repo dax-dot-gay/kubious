@@ -1,6 +1,6 @@
 pub mod app_state {
     use std::{collections::HashMap, sync::{Mutex, MutexGuard}};
-    use kube::Config;
+    use kube::{Client, Config};
     use serde::{Deserialize, Serialize};
 
     use crate::compat::kube_compat::KubeConfig;
@@ -99,6 +99,17 @@ pub mod app_state {
 
         pub fn new() -> Self {
             AppState { configs: Mutex::new(HashMap::<String, KubeConfig>::new()), current_config: Mutex::new(None) }
+        }
+
+        pub async fn client(&self) -> Option<Client> {
+            if let Some(current) = self.get_current_config() {
+                match Client::try_from(<KubeConfig as Into<Config>>::into(current)) {
+                    Ok(cl) => Some(cl),
+                    Err(_) => None
+                }
+            } else {
+                None
+            }
         }
     }
 }

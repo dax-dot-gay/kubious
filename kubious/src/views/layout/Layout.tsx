@@ -26,8 +26,8 @@ export function Layout() {
                         <Button
                             onClick={() =>
                                 execute_command(
-                                    CommandScope.Helm,
-                                    "get_version"
+                                    CommandScope.Kube,
+                                    "supported_groups"
                                 ).then(console.log)
                             }
                         >

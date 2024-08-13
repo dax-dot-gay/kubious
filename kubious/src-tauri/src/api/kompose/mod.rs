@@ -5,15 +5,13 @@ pub mod kompose_api {
 
     use tauri_plugin_shell::ShellExt;
 
-    fn get_shell_version(handle: &tauri::AppHandle) -> Result<String, String> {
+    async fn get_shell_version(handle: &tauri::AppHandle) -> Result<String, String> {
         let shell = handle.shell();
-        let output = tauri::async_runtime::block_on(async move {
-            shell
+        let output = shell
                 .command("helm")
                 .args(["version", "--short"])
                 .output()
                 .await
-        })
         .or(Err("Command execution failed.".into()))
         .and_then(|out| {
             if out.status.success() {
@@ -34,9 +32,9 @@ pub mod kompose_api {
         GetVersion{}
     }
     impl CommandHandler for KomposeCommand {
-        fn execute(&self, handle: &tauri::AppHandle) -> Result<Value, String> {
+        async fn execute(&self, handle: &tauri::AppHandle) -> Result<Value, String> {
             match *self {
-                KomposeCommand::GetVersion{} => self.wrap_in_value(get_shell_version(handle))
+                KomposeCommand::GetVersion{} => self.wrap_in_value(get_shell_version(handle).await)
             }
         }
     }
