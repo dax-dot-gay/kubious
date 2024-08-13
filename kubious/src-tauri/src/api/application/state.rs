@@ -1,7 +1,8 @@
 pub mod app_state {
-    use std::{collections::HashMap, sync::{Mutex, MutexGuard}};
+    use std::{collections::HashMap, fs::File, io::Write, sync::{Mutex, MutexGuard}};
     use kube::{Client, Config};
     use serde::{Deserialize, Serialize};
+    use tauri::{AppHandle, Manager};
 
     use crate::compat::kube_compat::KubeConfig;
 
@@ -109,6 +110,17 @@ pub mod app_state {
                 }
             } else {
                 None
+            }
+        }
+
+        pub fn save_state(&self, handle: AppHandle) -> Result<(), String> {
+            if let Ok(path) = handle.path().parse("$APPCONFIG/config.json") {
+                let mut config_file = File::create(path).unwrap();
+                let jsonified = self.to_json().unwrap();
+                config_file.write_all(jsonified.as_bytes()).unwrap();
+                Ok(())
+            } else {
+                Err("Failed to write new current config to file.".to_string())
             }
         }
     }

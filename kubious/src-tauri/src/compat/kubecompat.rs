@@ -7,7 +7,7 @@ pub mod kube_compat {
     use kube::{config::AuthInfo, Config};
     use serde::{Deserialize, Serialize};
 
-    #[derive(Serialize, Deserialize, Clone)]
+    #[derive(Serialize, Deserialize, Clone, Debug)]
     pub struct KubeConfig {
         pub cluster_url: String,
         pub default_namespace: String,
