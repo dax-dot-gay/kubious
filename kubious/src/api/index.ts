@@ -17,7 +17,22 @@ import { UnionToIntersection, ValuesType } from "utility-types";
 import { useCustomCompareMemo } from "use-custom-compare";
 import { difference } from "lodash";
 
-export { ApiProvider, execute_command, ConnectionState };
+import { ApplicationMixin } from "./methods/app";
+import { ArtifactsMixin } from "./methods/artifacts";
+import { HelmMixin } from "./methods/helm";
+import { KomposeMixin } from "./methods/kompose";
+import { KubeMixin } from "./methods/kube";
+
+export {
+    ApiProvider,
+    execute_command,
+    ConnectionState,
+    ApplicationMixin,
+    ArtifactsMixin,
+    HelmMixin,
+    KomposeMixin,
+    KubeMixin,
+};
 export type {
     CommandResult,
     CommandScope,
