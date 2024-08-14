@@ -1,12 +1,22 @@
 pub mod application_api {
 
-    use crate::CommandHandler;
+    use std::collections::HashMap;
+
+    use crate::{compat::kube_compat::KubeConfig, CommandHandler};
+    use k8s_openapi::apimachinery::pkg::version::Info;
     use kube::config::Kubeconfig;
     use serde::{Deserialize, Serialize};
     use serde_json::Value;
     use tauri::Manager;
 
     use super::app_state::AppState;
+
+    #[derive(Serialize, Deserialize, Clone, Debug)]
+    pub struct ConfigCheck {
+        config: KubeConfig,
+        connected: bool,
+        version: Option<Info>
+    }
 
     #[derive(Serialize, Deserialize, Clone, Debug)]
     #[serde(tag = "command")]
@@ -16,6 +26,8 @@ pub mod application_api {
         GetConfigs {},
         AddConfig { key: String, config: Kubeconfig },
         RemoveConfig { key: String },
+        CheckConfigs {},
+        CheckConfig {key: String}
     }
     impl CommandHandler for ApplicationCommand {
         async fn execute(&self, handle: &tauri::AppHandle) -> Result<Value, String> {
@@ -53,6 +65,38 @@ pub mod application_api {
                         .save_state(handle.clone())
                         .and(self.wrap_in_value(Ok(())))
                         .or(Err("Failed to save state".to_string()))
+                },
+                ApplicationCommand::CheckConfig { key } => {
+                    let state = handle.state::<AppState>();
+                    if let Some(config) = state.select_config(key) {
+                        if let Some(client) = state.client_for(key).await {
+                            if let Ok(vers) = client.apiserver_version().await {
+                                self.wrap_in_value(Ok(ConfigCheck {config, connected: true, version: Some(vers)}))
+                            } else {
+                                self.wrap_in_value(Ok(ConfigCheck {config, connected: false, version: None}))
+                            }
+                        } else {
+                            self.wrap_in_value(Ok(ConfigCheck {config, connected: false, version: None}))
+                        }
+                    } else {
+                        Err("Unknown config key".to_string())
+                    }
+                },
+                ApplicationCommand::CheckConfigs {  } => {
+                    let state = handle.state::<AppState>();
+                    let mut config_mapping: HashMap<String, ConfigCheck> = HashMap::new();
+                    for (key, config) in state.get_configs() {
+                        if let Some(client) = state.client_for(key.as_str()).await {
+                            if let Ok(vers) = client.apiserver_version().await {
+                                config_mapping.insert(key, ConfigCheck {config, connected: true, version: Some(vers)});
+                            } else {
+                                config_mapping.insert(key, ConfigCheck {config, connected: false, version: None});
+                            }
+                        } else {
+                            config_mapping.insert(key, ConfigCheck {config, connected: false, version: None});
+                        }
+                    }
+                    self.wrap_in_value(Ok(config_mapping))
                 }
             }
         }

@@ -54,10 +54,10 @@ pub mod app_state {
             }
         }
 
-        pub fn get_current_config(&self) -> Option<KubeConfig> {
+        pub fn get_current_config(&self) -> Option<(String, KubeConfig)> {
             if let Some(current) = self.current_config_mutable().clone() {
                 if let Some(c) = self.configs_mutable().get(&current) {
-                    return Some(c.clone());
+                    return Some((current, c.clone()));
                 }
             }
             None
@@ -65,6 +65,10 @@ pub mod app_state {
 
         pub fn get_configs(&self) -> HashMap<String, KubeConfig> {
             self.configs_mutable().clone()
+        }
+
+        pub fn select_config(&self, key: &str) -> Option<KubeConfig> {
+            self.configs_mutable().get(key).and_then(|v| Some(v.clone()))
         }
 
         pub fn put_config(&self, key: &str, config: Config) -> KubeConfig {
@@ -127,7 +131,18 @@ pub mod app_state {
 
         pub async fn client(&self) -> Option<Client> {
             if let Some(current) = self.get_current_config() {
-                match Client::try_from(<KubeConfig as Into<Config>>::into(current)) {
+                match Client::try_from(<KubeConfig as Into<Config>>::into(current.1)) {
+                    Ok(cl) => Some(cl),
+                    Err(_) => None,
+                }
+            } else {
+                None
+            }
+        }
+
+        pub async fn client_for(&self, key: &str) -> Option<Client> {
+            if let Some(select) = (*self.configs_mutable()).get(key) {
+                match Client::try_from(<KubeConfig as Into<Config>>::into(select.clone())) {
                     Ok(cl) => Some(cl),
                     Err(_) => None,
                 }

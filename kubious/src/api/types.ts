@@ -1,3 +1,4 @@
+import { createContext } from "react";
 import { execute_command } from "./common";
 
 export enum CommandScope {
@@ -101,8 +102,36 @@ export class ConnectionState {
     }
 }
 
-export type ApiContextType = {
-    clusters: { [key: string]: ClusterConfig };
-    connection: ConnectionState;
-    reload: () => Promise<{ [key: string]: ClusterConfig }>;
+export type ClusterVersion = {
+    build_date: string;
+    compiler: string;
+    git_commit: string;
+    git_tree_state: string;
+    git_version: string;
+    go_version: string;
+    major: string;
+    minor: string;
+    platform: string;
 };
+
+export type ClusterInfo = {
+    config: ClusterConfig;
+    connected: boolean;
+    version: ClusterVersion | null;
+};
+
+export type ClusterMapping = {
+    [key: string]: ClusterInfo;
+};
+
+export type ApiContextType = {
+    clusters: ClusterMapping;
+    connection: ConnectionState;
+    reload: () => Promise<ClusterMapping>;
+};
+
+export const ApiContext = createContext<ApiContextType>({
+    clusters: {},
+    connection: ConnectionState.inactive(),
+    reload: async () => ({}),
+});

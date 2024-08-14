@@ -4,7 +4,23 @@
   },
   "views": {
     "dashboard": {
-      "nav": "Dashboard"
+      "nav": "Dashboard",
+      "clusters": {
+        "title": "Clusters",
+        "header": {
+          "connected": "Connected",
+          "name": "Name",
+          "url": "URL",
+          "version": "API Version",
+          "actions": "Actions"
+        },
+        "action": {
+          "connect": "Connect",
+          "edit": "Edit",
+          "delete": "Delete",
+          "disconnect": "Disconnect"
+        }
+      }
     }
   }
 }
