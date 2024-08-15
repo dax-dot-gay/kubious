@@ -17,8 +17,10 @@ export function ApiProvider({
     const [connection, setConnection] = useState<ConnectionState>(
         ConnectionState.inactive()
     );
+    const [reloading, setReloading] = useState(false);
 
     const reload = useCallback(async () => {
+        setReloading(true);
         const config_statuses = await execute_command<ClusterMapping>(
             CommandScope.Application,
             "check_configs"
@@ -27,8 +29,6 @@ export function ApiProvider({
             CommandScope.Application,
             "get_current_config"
         );
-
-        console.log(config_statuses, current);
 
         if (config_statuses.success) {
             setClusters(config_statuses.value);
@@ -47,16 +47,18 @@ export function ApiProvider({
         } else {
             setConnection(ConnectionState.inactive());
         }
-
+        setReloading(false);
         return config_statuses.success ? config_statuses.value : {};
-    }, [setClusters, setConnection]);
+    }, [setClusters, setConnection, setReloading]);
 
     useEffect(() => {
         reload();
     }, []);
 
     return (
-        <ApiContext.Provider value={{ clusters, connection, reload }}>
+        <ApiContext.Provider
+            value={{ clusters, connection, reload, reloading, setConnection }}
+        >
             {children}
         </ApiContext.Provider>
     );

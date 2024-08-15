@@ -13,7 +13,13 @@ import { mdiShipWheel } from "@mdi/js";
 import Icon from "@mdi/react";
 import { useTranslation } from "react-i18next";
 import { DataTable } from "mantine-datatable";
-import { useClusters, useConnection } from "../../api";
+import {
+    ApplicationMixin,
+    useApi,
+    useClusters,
+    useConnection,
+    useReload,
+} from "../../api";
 import { useMemo } from "react";
 import {
     IconPlug,
@@ -21,14 +27,17 @@ import {
     IconPencil,
     IconTrashFilled,
     IconWifi,
+    IconRefresh,
 } from "@tabler/icons-react";
 
 function ClusterTable() {
     const clusters = useClusters();
     const connection = useConnection();
+    const { reloading, reload } = useReload();
     const { t } = useTranslation();
     const theme = useMantineTheme();
     const scheme = useMantineColorScheme();
+    const { methods } = useApi(ApplicationMixin);
 
     const clusterData = useMemo(
         () =>
@@ -36,7 +45,7 @@ function ClusterTable() {
                 name: key,
                 url: cluster.config.cluster_url,
                 accessible: cluster.connected,
-                connected: key === connection.name,
+                connected: key === connection.name && cluster.connected,
                 version: cluster.version
                     ? `${cluster.version.major}.${cluster.version.minor}`
                     : "-",
@@ -47,15 +56,36 @@ function ClusterTable() {
     return (
         <Box className="dashboard-section clusters" p="sm">
             <Stack gap="sm">
-                <Group gap="sm">
-                    <Icon path={mdiShipWheel} size="28px" />
-                    <Text size="xl">{t("views.dashboard.clusters.title")}</Text>
+                <Group gap="sm" justify="space-between">
+                    <Group gap="sm">
+                        <Icon path={mdiShipWheel} size="28px" />
+                        <Text size="xl">
+                            {t("views.dashboard.clusters.title")}
+                        </Text>
+                    </Group>
+                    <ActionIcon
+                        size="lg"
+                        radius="xl"
+                        variant="transparent"
+                        color="gray"
+                        disabled={reloading}
+                        onClick={() => reload()}
+                    >
+                        <IconRefresh size={24} />
+                    </ActionIcon>
                 </Group>
                 <DataTable
-                    records={clusterData}
+                    fetching={reloading}
+                    records={reloading ? [] : clusterData}
                     withColumnBorders
                     withTableBorder
                     borderRadius="sm"
+                    minHeight={
+                        reloading || clusterData.length === 0
+                            ? "150px"
+                            : undefined
+                    }
+                    idAccessor="name"
                     columns={[
                         {
                             accessor: "accessible",
@@ -135,8 +165,13 @@ function ClusterTable() {
                                             <ActionIcon
                                                 size="md"
                                                 variant="light"
-                                                disabled={!record.connected}
+                                                disabled={!record.accessible}
                                                 color="red"
+                                                onClick={() =>
+                                                    methods.appSetCurrentConfig(
+                                                        null
+                                                    )
+                                                }
                                             >
                                                 <IconPlugOff size={16} />
                                             </ActionIcon>
@@ -155,8 +190,13 @@ function ClusterTable() {
                                             <ActionIcon
                                                 size="md"
                                                 variant="light"
-                                                disabled={!record.connected}
+                                                disabled={!record.accessible}
                                                 color="green"
+                                                onClick={() =>
+                                                    methods.appSetCurrentConfig(
+                                                        record.name
+                                                    )
+                                                }
                                             >
                                                 <IconPlug size={16} />
                                             </ActionIcon>

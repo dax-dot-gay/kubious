@@ -1,4 +1,4 @@
-import { ApiContextType } from "../types";
+import { ApiContextType, ConnectionState } from "../types";
 
 export class BaseApi {
     public constructor(public state: ApiContextType) {}
@@ -17,6 +17,10 @@ export class BaseApi {
 
     public get current() {
         return this.state.connection.config;
+    }
+
+    public set connection(value: ConnectionState) {
+        this.state.setConnection(value);
     }
 }
 

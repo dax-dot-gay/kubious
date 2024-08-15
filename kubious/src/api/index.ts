@@ -119,3 +119,11 @@ export function useApi<TMixins extends ApiMixin<any, any>[]>(
         methods: methods as any,
     };
 }
+
+export function useReload(): {
+    reloading: boolean;
+    reload: () => Promise<ClusterMapping>;
+} {
+    const api = useApiContext();
+    return { reloading: api.reloading, reload: api.reload };
+}

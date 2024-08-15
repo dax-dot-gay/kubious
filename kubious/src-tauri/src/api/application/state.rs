@@ -8,13 +8,13 @@ pub mod app_state {
         collections::HashMap,
         fs::File,
         io::Write,
-        sync::{Mutex, MutexGuard},
+        sync::{Mutex, MutexGuard}, time::Duration,
     };
     use tauri::{AppHandle, Manager};
 
     use crate::compat::kube_compat::KubeConfig;
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Serialize, Deserialize, Debug)]
     pub struct AppState {
         configs: Mutex<HashMap<String, KubeConfig>>,
         current_config: Mutex<Option<String>>,
@@ -47,11 +47,13 @@ pub mod app_state {
                     *current = Some(name);
                     Ok(Some(c.clone()))
                 } else {
-                    Err("Unknwon config name".to_string())
+                    Err("Unknown config name".to_string())
                 }
             } else {
+                *current = None;
                 Ok(None)
             }
+            
         }
 
         pub fn get_current_config(&self) -> Option<(String, KubeConfig)> {
@@ -130,7 +132,9 @@ pub mod app_state {
         }
 
         pub async fn client(&self) -> Option<Client> {
-            if let Some(current) = self.get_current_config() {
+            if let Some(cur) = self.get_current_config() {
+                let mut current = cur.clone();
+                current.1.connect_timeout = Some(Duration::from_secs(10));
                 match Client::try_from(<KubeConfig as Into<Config>>::into(current.1)) {
                     Ok(cl) => Some(cl),
                     Err(_) => None,
@@ -141,7 +145,9 @@ pub mod app_state {
         }
 
         pub async fn client_for(&self, key: &str) -> Option<Client> {
-            if let Some(select) = (*self.configs_mutable()).get(key) {
+            if let Some(sel) = (*self.configs_mutable()).get(key) {
+                let mut select = sel.clone();
+                select.connect_timeout = Some(Duration::from_secs(10));
                 match Client::try_from(<KubeConfig as Into<Config>>::into(select.clone())) {
                     Ok(cl) => Some(cl),
                     Err(_) => None,

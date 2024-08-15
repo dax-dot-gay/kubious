@@ -1,8 +1,25 @@
-import { Box, Button, Divider, Group, Paper, Stack, Text } from "@mantine/core";
+import {
+    Box,
+    Button,
+    Divider,
+    Group,
+    Loader,
+    Paper,
+    Select,
+    Stack,
+    Text,
+} from "@mantine/core";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Icon } from "@mdi/react";
-import { mdiCube, mdiViewDashboard } from "@mdi/js";
+import { mdiCube, mdiShipWheel, mdiViewDashboard } from "@mdi/js";
 import { useTranslation } from "react-i18next";
+import {
+    ApplicationMixin,
+    useApi,
+    useClusters,
+    useConnection,
+    useReload,
+} from "../../api";
 
 function NavButton({
     icon,
@@ -29,6 +46,11 @@ function NavButton({
 
 export function Layout() {
     const { t } = useTranslation();
+    const connection = useConnection();
+    const clusters = useClusters();
+    const { reloading } = useReload();
+    const { methods } = useApi(ApplicationMixin);
+
     return (
         <Box className="app-root">
             <Group gap="sm" wrap="nowrap" className="layout-group" p="xs">
@@ -49,6 +71,21 @@ export function Layout() {
                             href="/"
                         />
                         <Divider />
+                        <Select
+                            clearable
+                            disabled={reloading}
+                            variant="filled"
+                            leftSection={
+                                reloading ? (
+                                    <Loader size="xs" />
+                                ) : (
+                                    <Icon path={mdiShipWheel} size="20px" />
+                                )
+                            }
+                            value={connection.name}
+                            onChange={(val) => methods.appSetCurrentConfig(val)}
+                            data={Object.keys(clusters)}
+                        />
                     </Stack>
                 </Paper>
                 <Box className="layout-content">

@@ -33,6 +33,7 @@ export async function execute_command<
                 ...(options ?? {}),
             },
         });
+        console.log(result);
         return result;
     } catch (e) {
         return {

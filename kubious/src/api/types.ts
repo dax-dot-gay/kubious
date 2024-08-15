@@ -127,11 +127,15 @@ export type ClusterMapping = {
 export type ApiContextType = {
     clusters: ClusterMapping;
     connection: ConnectionState;
+    setConnection: (connection: ConnectionState) => void;
     reload: () => Promise<ClusterMapping>;
+    reloading: boolean;
 };
 
 export const ApiContext = createContext<ApiContextType>({
     clusters: {},
     connection: ConnectionState.inactive(),
     reload: async () => ({}),
+    reloading: false,
+    setConnection: () => {},
 });
